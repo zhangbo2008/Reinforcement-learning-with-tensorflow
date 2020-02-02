@@ -15,15 +15,15 @@ View more on my tutorial page: https://morvanzhou.github.io/tutorials/
 from maze_env import Maze
 from RL_brain import QLearningTable
 
-
+# 这个是算法,运行在模型env上 这个过程的代码实现. 就是复写maze环境中的update函数.
 def update():
-    for episode in range(100):
+    for episode in range(100): #总共跑100次.
         # initial observation
-        observation = env.reset()
+        observation = env.reset()  # observation 表示当前玩家所在的坐标.
 
         while True:
             # fresh env
-            env.render()
+            env.render()  #让动画跑起来.固定写法.
 
             # RL choose action based on observation
             action = RL.choose_action(str(observation))
@@ -44,6 +44,9 @@ def update():
     # end of game
     print('game over')
     env.destroy()
+
+
+
 
 if __name__ == "__main__":
     env = Maze()

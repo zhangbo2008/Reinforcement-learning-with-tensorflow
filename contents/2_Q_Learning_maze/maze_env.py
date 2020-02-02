@@ -12,6 +12,14 @@ View more on my tutorial page: https://morvanzhou.github.io/tutorials/
 """
 
 
+
+
+'''
+使用tkinter建立环境.gui
+'''
+
+
+
 import numpy as np
 import time
 import sys
@@ -26,24 +34,27 @@ MAZE_H = 4  # grid height
 MAZE_W = 4  # grid width
 
 
-class Maze(tk.Tk, object):
+class Maze(tk.Tk):
     def __init__(self):
         super(Maze, self).__init__()
-        self.action_space = ['u', 'd', 'l', 'r']
+        self.action_space = ['u', 'd', 'l', 'r']   # up ,down , left, right
         self.n_actions = len(self.action_space)
         self.title('maze')
-        self.geometry('{0}x{1}'.format(MAZE_H * UNIT, MAZE_H * UNIT))
+        self.geometry('{0}x{1}'.format(MAZE_H * UNIT, MAZE_H * UNIT)) #表示整个gui,的像素宽*高.
         self._build_maze()
 
     def _build_maze(self):
-        self.canvas = tk.Canvas(self, bg='white',
+        #画出maze
+
+
+        self.canvas = tk.Canvas(self, bg='white', #设置背景
                            height=MAZE_H * UNIT,
                            width=MAZE_W * UNIT)
 
         # create grids
         for c in range(0, MAZE_W * UNIT, UNIT):
             x0, y0, x1, y1 = c, 0, c, MAZE_H * UNIT
-            self.canvas.create_line(x0, y0, x1, y1)
+            self.canvas.create_line(x0, y0, x1, y1)  #根据4个坐标做起始点终止点.画直线.
         for r in range(0, MAZE_H * UNIT, UNIT):
             x0, y0, x1, y1 = 0, r, MAZE_W * UNIT, r
             self.canvas.create_line(x0, y0, x1, y1)
@@ -71,14 +82,14 @@ class Maze(tk.Tk, object):
             oval_center[0] + 15, oval_center[1] + 15,
             fill='yellow')
 
-        # create red rect
+        # create red rect   表示玩家.
         self.rect = self.canvas.create_rectangle(
             origin[0] - 15, origin[1] - 15,
             origin[0] + 15, origin[1] + 15,
             fill='red')
 
         # pack all
-        self.canvas.pack()
+        self.canvas.pack()  #canvas.pack加载的意思,必须这么写一下
 
     def reset(self):
         self.update()
@@ -112,13 +123,13 @@ class Maze(tk.Tk, object):
 
         s_ = self.canvas.coords(self.rect)  # next state
 
-        # reward function
+        # reward function      #这里设置.我感觉
         if s_ == self.canvas.coords(self.oval):
             reward = 1
             done = True
-            s_ = 'terminal'
+            s_ = 'terminal'   #  1 和-1都是terminal
         elif s_ in [self.canvas.coords(self.hell1), self.canvas.coords(self.hell2)]:
-            reward = -1
+            reward = -1            #这个地方可以设置为-100试试.效果没啥区别.所以还是写1吧.
             done = True
             s_ = 'terminal'
         else:
@@ -129,10 +140,10 @@ class Maze(tk.Tk, object):
 
     def render(self):
         time.sleep(0.1)
-        self.update()
+        self.update()  #这个是调用tkinter本身的update,必须这么写才能让动画跑起来.
 
 
-def update():
+def update():#这个是自己写的算法update,跟self.update无关.
     for t in range(10):
         s = env.reset()
         while True:
