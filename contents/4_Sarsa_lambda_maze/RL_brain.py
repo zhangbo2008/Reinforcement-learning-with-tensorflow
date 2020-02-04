@@ -46,6 +46,16 @@ class RL(object):
         pass
 
 
+
+
+
+
+
+# 下面行就是sarsa lambda 算法. 不止更新一步,而是记录走到当前步的路径历史,都对他们进行更新.
+# 所以可以提高收敛速度.
+
+
+
 # backward eligibility traces
 class SarsaLambdaTable(RL):
     def __init__(self, actions, learning_rate=0.01, reward_decay=0.9, e_greedy=0.9, trace_decay=0.9):
@@ -69,6 +79,9 @@ class SarsaLambdaTable(RL):
             self.eligibility_trace = self.eligibility_trace.append(to_be_append)
 
     def learn(self, s, a, r, s_, a_):
+        #每一次状态转化都进行学习.叫一次学习.
+
+
         self.check_state_exist(s_)
         q_predict = self.q_table.loc[s, a]
         if s_ != 'terminal':
@@ -82,7 +95,14 @@ class SarsaLambdaTable(RL):
         # Method 1:
         # self.eligibility_trace.loc[s, a] += 1
 
+
+
+
+#下面是lamda 更新过程.
         # Method 2:
+
+        # 首先更新 权重表.  表示s只记忆最后一次路过这个s时候所做的动作.其他动作不要记忆,
+        #因为他们不是有效的.
         self.eligibility_trace.loc[s, :] *= 0
         self.eligibility_trace.loc[s, a] = 1
 
@@ -90,4 +110,8 @@ class SarsaLambdaTable(RL):
         self.q_table += self.lr * error * self.eligibility_trace
 
         # decay eligibility trace after update
+        #保证每一次学习都会先对之前的eli表进行衰减.
         self.eligibility_trace *= self.gamma*self.lambda_
+
+
+#         是否可以对q 学习也做一样的路径记录呢?????????????2020-02-02,17点35

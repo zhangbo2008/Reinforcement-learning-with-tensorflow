@@ -8,7 +8,7 @@ View more on my tutorial page: https://morvanzhou.github.io/tutorials/
 Using:
 Tensorflow: r1.2
 """
-
+ #
 import numpy as np
 import tensorflow as tf
 
@@ -28,7 +28,7 @@ class DeepQNetwork:
             replace_target_iter=300,
             memory_size=500,
             batch_size=32,
-            e_greedy_increment=None,
+            e_greedy_increment=None,  #   whether increse greedy , if ture it will better to instinct
             output_graph=False,
     ):
         self.n_actions = n_actions
@@ -41,9 +41,9 @@ class DeepQNetwork:
         self.batch_size = batch_size
         self.epsilon_increment = e_greedy_increment
         self.epsilon = 0 if e_greedy_increment is not None else self.epsilon_max
+        #
 
-        # total learning step
-        self.learn_step_counter = 0
+        # total learning stepdd1但是        self.learn_step_counter = 0
 
         # initialize zero memory [s, a, r, s_]
         self.memory = np.zeros((self.memory_size, n_features * 2 + 2))

@@ -88,7 +88,7 @@ class Maze(tk.Tk, object):
             origin[0] - 15, origin[1] - 15,
             origin[0] + 15, origin[1] + 15,
             fill='red')
-        # return observation
+        # return observation   记录的是百分比.
         return (np.array(self.canvas.coords(self.rect)[:2]) - np.array(self.canvas.coords(self.oval)[:2]))/(MAZE_H*UNIT)
 
     def step(self, action):
@@ -106,11 +106,13 @@ class Maze(tk.Tk, object):
         elif action == 3:   # left
             if s[0] > UNIT:
                 base_action[0] -= UNIT
-
+#下一步吧rect移动到s_状态.
         self.canvas.move(self.rect, base_action[0], base_action[1])  # move agent
 
         next_coords = self.canvas.coords(self.rect)  # next state
 
+
+#计算下一个状态的奖励值.
         # reward function
         if next_coords == self.canvas.coords(self.oval):
             reward = 1
@@ -121,7 +123,14 @@ class Maze(tk.Tk, object):
         else:
             reward = 0
             done = False
+
+        # 跟之前的环境不一样的地方时这里面都用百分比了.
         s_ = (np.array(next_coords[:2]) - np.array(self.canvas.coords(self.oval)[:2]))/(MAZE_H*UNIT)
+
+        #s_是下一个状态的编码值,(这里的编码是在屏幕的距离左上角百分比的位置,是2个实数表示),reward表示s_给予的奖励
+        # done表示s_是不是terminal.
+
+
         return s_, reward, done
 
     def render(self):
