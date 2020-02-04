@@ -82,12 +82,12 @@ class Maze(tk.Tk, object):
     def reset(self):
         self.update()
         time.sleep(0.1)
-        self.canvas.delete(self.rect)
+        self.canvas.delete(self.rect) #删除旧的玩家.
         origin = np.array([20, 20])
         self.rect = self.canvas.create_rectangle(
             origin[0] - 15, origin[1] - 15,
             origin[0] + 15, origin[1] + 15,
-            fill='red')
+            fill='red')   #把玩家放到原点上.
         # return observation   记录的是百分比.
         return (np.array(self.canvas.coords(self.rect)[:2]) - np.array(self.canvas.coords(self.oval)[:2]))/(MAZE_H*UNIT)
 
@@ -102,7 +102,7 @@ class Maze(tk.Tk, object):
                 base_action[1] += UNIT
         elif action == 2:   # right
             if s[0] < (MAZE_W - 1) * UNIT:
-                base_action[0] += UNIT
+                base_action[0] += UNIT           #right
         elif action == 3:   # left
             if s[0] > UNIT:
                 base_action[0] -= UNIT

@@ -299,7 +299,20 @@ loss是 最后是traget
         所以300步更新一次就够了.误差不会变大,会节省接近1/2的算力.加速百分之百.
         
         
+        2.另外一个创新是记忆库memory的使用.
         
+        首先建立记忆库:
+        
+                self.memory[index, :] = transition
+                利用这个方法来吧transition存入记忆库中.transition是6维向量.
+                s,a,r,s_ 其中s和s_都是2维的向量.
+                
+                存入后
+        
+        sample_index = np.random.choice(self.memory_size, size=self.batch_size)
+        进行随机读取.这样就大乱了各个state之见的前后关系.因为我们的游戏是马尔科夫过程
+        所以各个state上的q值跟这个state之前的历史是无关的.需要打破存入数据的序,来体现这个马尔可夫性
+        所以我们进行choice函数来进行
         
         
         
@@ -316,6 +329,7 @@ loss是 最后是traget
 
 
         """
+
         For example in this batch I have 2 samples and 3 actions:
         
         第一个sample 里面 action 1取值是1, action2 取值2, action3 取值3
