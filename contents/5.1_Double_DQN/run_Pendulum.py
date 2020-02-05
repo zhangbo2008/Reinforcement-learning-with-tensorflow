@@ -8,7 +8,13 @@ Using:
 Tensorflow: 1.0
 gym: 0.8.0
 """
+'''
+这个double dqn的例子,说的是用double dqn解决 over estimating
+这个代码运行完会出现2个图.第二个图里面会看到解决了over estimate问题.
+说的是reward 在这个问题中都是<=0的.训练之后的q值也一定会<=0.
+但是dqn里面会出现>0的现象.
 
+'''
 
 import gym
 from RL_brain import DoubleDQN
@@ -40,14 +46,14 @@ sess.run(tf.global_variables_initializer())
 
 def train(RL):
     total_steps = 0
-    observation = env.reset()
+    observation = env.reset()          # 返回2个数,第一个是-pi 到pi 第二个是-1 到1
     while True:
         # if total_steps - MEMORY_SIZE > 8000: env.render()
 
         action = RL.choose_action(observation)
-
+#从step代码知道 action需要一个-2到2的浮点数.
         f_action = (action-(ACTION_SPACE-1)/2)/((ACTION_SPACE-1)/4)   # convert to [-2 ~ 2] float actions
-        observation_, reward, done, info = env.step(np.array([f_action]))
+        observation_, reward, done, info = env.step(np.array([f_action]))#这游戏observation_ 3个,
 
         reward /= 10     # normalize to a range of (-1, 0). r = 0 when get upright
         # the Q target at upright state will be 0, because Q_target = r + gamma * Qmax(s', a') = 0 + gamma * 0

@@ -10,6 +10,9 @@ gym: 0.8.0
 import gym
 from RL_brain import DeepQNetwork
 
+
+
+
 env = gym.make('MountainCar-v0')
 env = env.unwrapped
 
@@ -18,6 +21,8 @@ print(env.observation_space)
 print(env.observation_space.high)
 print(env.observation_space.low)
 
+
+#  mountcar 游戏,
 RL = DeepQNetwork(n_actions=3, n_features=2, learning_rate=0.001, e_greedy=0.9,
                   replace_target_iter=300, memory_size=3000,
                   e_greedy_increment=0.0002,)
@@ -26,20 +31,24 @@ total_steps = 0
 
 
 for i_episode in range(10):
-
+#首先查看reset函数来看数值是如何初始化的. 看代码知道.位置初始值是 -0.5 速度初始值是0
     observation = env.reset()
     ep_r = 0
     while True:
-        env.render()
+        env.render() #表示渲染这一帧,让玩家看到动画.不要动画就不写这行就行了.
 
         action = RL.choose_action(observation)
+#         通过看env.step源码就知道
+#这个预习observation_ 里面是,positon,velocity  reward:是每一步都是-1.0 done是是否达到最高点.
 
+
+        #  虽然知道acton里面是3个离散值,但是具体代表什么物理含义呢???
         observation_, reward, done, info = env.step(action)
 
         position, velocity = observation_
 
         # the higher the better
-        reward = abs(position - (-0.5))     # r in [0, 1]
+        reward = abs(position - (-0.5))     # r in [0, 1]  #越原理-0.5越好. 因为-.5是初始值.
 
         RL.store_transition(observation, action, reward, observation_)
 

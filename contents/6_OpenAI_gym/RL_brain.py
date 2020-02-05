@@ -16,6 +16,9 @@ import tensorflow as tf
 
 
 # Deep Q Network off-policy
+# 这个文件一般不用太改动,因为dqn算法对于各个学习任务都通用.一般改改参数就行了.
+
+
 class DeepQNetwork:
     def __init__(
             self,

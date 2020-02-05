@@ -4,7 +4,7 @@
     <content url="file://$MODULE_DIR$">
       <sourceFolder url="file://$MODULE_DIR$/contents" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/contents/5_Deep_Q_Network" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/contents/5.1_Double_DQN" isTestSource="false" />
     </content>
     <orderEntry type="jdk" jdkName="Python 3.7 (Reinforcement-learning-with-tensorflow)" jdkType="Python SDK" />
     <orderEntry type="sourceFolder" forTests="false" />

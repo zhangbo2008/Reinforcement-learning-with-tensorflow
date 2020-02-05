@@ -107,7 +107,7 @@ class DoubleDQN:
         observation = observation[np.newaxis, :]
         actions_value = self.sess.run(self.q_eval, feed_dict={self.s: observation})
         action = np.argmax(actions_value)
-
+        # 画图用 这个q 变量. 就是把q值记录下来.
         if not hasattr(self, 'q'):  # record action value it gets
             self.q = []
             self.running_q = 0
@@ -139,13 +139,40 @@ class DoubleDQN:
 
         batch_index = np.arange(self.batch_size, dtype=np.int32)
         eval_act_index = batch_memory[:, self.n_features].astype(int)
-        reward = batch_memory[:, self.n_features + 1]
+        reward = batch_memory[:,
+                 self.n_features + 1]
 
-        if self.double_q:
+
+
+
+
+
+
+
+
+
+#double dqn 的算法核心就是下面这一段
+        if self.double_q:  #因为下面一行的max_act4next 算法的比  np.max(q_next, axis=1) 这个要更精细.所以效果好.
             max_act4next = np.argmax(q_eval4next, axis=1)        # the action that brings the highest value is evaluated by q_eval
             selected_q_next = q_next[batch_index, max_act4next]  # Double DQN, select q_next depending on above actions
         else:
+
+            #  下行的动作是q_next里面q值最大的.
             selected_q_next = np.max(q_next, axis=1)    # the natural DQN
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
         q_target[batch_index, eval_act_index] = reward + self.gamma * selected_q_next
 
