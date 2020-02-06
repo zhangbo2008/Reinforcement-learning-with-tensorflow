@@ -62,6 +62,17 @@ class DuelingDQN:
 
     def _build_net(self):
         def build_layers(s, c_names, n_l1, w_initializer, b_initializer):
+
+            '''
+            整个算法的改进在下面这个函数中.
+
+            :param s:
+            :param c_names:
+            :param n_l1:
+            :param w_initializer:
+            :param b_initializer:
+            :return:
+            '''
             with tf.variable_scope('l1'):
                 w1 = tf.get_variable('w1', [self.n_features, n_l1], initializer=w_initializer, collections=c_names)
                 b1 = tf.get_variable('b1', [1, n_l1], initializer=b_initializer, collections=c_names)
@@ -78,8 +89,12 @@ class DuelingDQN:
                     w2 = tf.get_variable('w2', [n_l1, self.n_actions], initializer=w_initializer, collections=c_names)
                     b2 = tf.get_variable('b2', [1, self.n_actions], initializer=b_initializer, collections=c_names)
                     self.A = tf.matmul(l1, w2) + b2
-
+#就是把之前的一个输出的网络,改成2个输出,然后再合并起来.这样q的表现力就更强了.
                 with tf.variable_scope('Q'):
+
+                    # 下面这行操作最核心了. 说是用来避免self.V学到0......为什么呢???   下面是自己的看法.
+
+                    # 也就是用来把self.A的平均值学习到self.V里面. 所以self.V就不会是0了.
                     out = self.V + (self.A - tf.reduce_mean(self.A, axis=1, keep_dims=True))     # Q = V(s) + A(s,a)
             else:
                 with tf.variable_scope('Q'):

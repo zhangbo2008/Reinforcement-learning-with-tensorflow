@@ -9,6 +9,14 @@ gym: 0.8.0
 """
 
 
+'''
+这个思路还是挺好理解的,不用翻论文了.意思就是error越大的example我作为样本抽样学习抽出来的概率越高.
+直接看代码实现就行了.主要是sumtree这个数据结构的代码.和带权重抽样的实现.如何高效率做到.
+'''
+'''
+这个脚本没有区别,priorited的算法都在RL_brain.py里面.
+'''
+
 import gym
 from RL_brain import DQNPrioritizedReplay
 import matplotlib.pyplot as plt

@@ -14,7 +14,8 @@ import tensorflow as tf
 np.random.seed(1)
 tf.set_random_seed(1)
 
-
+# 我自己看莫凡算法视频的时候,想的是最大堆,每一次选sample学习的时候就从根,这个最大的出发,然后分配概率选根或者选左,右,
+# 但是批量选取的时候就会算法慢.所以看看sumtree如何做的更好.
 class SumTree(object):
     """
     This SumTree code is a modified version and the original code is from:
@@ -26,7 +27,10 @@ class SumTree(object):
 
     def __init__(self, capacity):
         self.capacity = capacity  # for all priority values
-        self.tree = np.zeros(2 * capacity - 1)
+
+        # 结构是一个索引数组tree, 一个存数据self.data
+
+        self.tree = np.zeros(2 * capacity - 1)         # 底层是一个数组.
         # [--------------Parent nodes-------------][-------leaves to recode priority-------]
         #             size: capacity - 1                       size: capacity
         self.data = np.zeros(capacity, dtype=object)  # for all transitions
@@ -70,6 +74,7 @@ class SumTree(object):
             cr_idx = cl_idx + 1
             if cl_idx >= len(self.tree):        # reach bottom, end search
                 leaf_idx = parent_idx
+                # 如果搜索到了叶子,就返回他的父节点.给leaf_idx
                 break
             else:       # downward search, always search for a higher priority node
                 if v <= self.tree[cl_idx]:
@@ -125,6 +130,8 @@ class Memory(object):  # stored as ( s, a, r, s_ ) in SumTree
         abs_errors += self.epsilon  # convert to abs and avoid 0
         clipped_errors = np.minimum(abs_errors, self.abs_err_upper)
         ps = np.power(clipped_errors, self.alpha)
+
+        # ps 就是权重了.
         for ti, p in zip(tree_idx, ps):
             self.tree.update(ti, p)
 
