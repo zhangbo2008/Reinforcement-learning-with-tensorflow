@@ -8,6 +8,14 @@ Tensorflow: 1.0
 gym: 0.8.0
 """
 
+
+'''
+才明白, q 学习是td 时序查分算法的一种特例.所以特的收敛性是保证的,正确性也是保证的.
+'''
+
+
+
+
 import numpy as np
 import tensorflow as tf
 
