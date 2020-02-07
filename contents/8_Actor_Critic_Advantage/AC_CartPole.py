@@ -10,6 +10,23 @@ tensorflow 1.0
 gym 0.8.0
 """
 
+
+'''
+感觉这个算法还是不理解:
+
+看看博客和论文:
+
+
+
+'''
+
+
+
+
+
+
+
+
 import numpy as np
 import tensorflow as tf
 import gym
