@@ -62,7 +62,7 @@ class Actor(object):
         if self.replacement['name'] == 'hard':
             self.t_replace_counter = 0
             self.hard_replace = [tf.assign(t, e) for t, e in zip(self.t_params, self.e_params)]
-        else:
+        else:  # soft模式是按照一个比例来进行折中赋值过去.
             self.soft_replace = [tf.assign(t, (1 - self.replacement['tau']) * t + self.replacement['tau'] * e)
                                  for t, e in zip(self.t_params, self.e_params)]
 
@@ -103,7 +103,7 @@ class Actor(object):
 
         with tf.variable_scope('A_train'):
             opt = tf.train.AdamOptimizer(-self.lr)  # (- learning rate) for ascent policy
-            self.train_op = opt.apply_gradients(zip(self.policy_grads, self.e_params))
+            self.train_op = opt.apply_gradients(zip(self.policy_grads, self.e_params))# 进行梯度下降.用apply_gradients.这行才是这个ddpg的精髓, 就是actor 需要从 critic网路里面的self.a这个值过来的梯度进行传导. 导致最后actor学习的方向也是让critic的loss变小. 而不是原始的actor critic 算法里面直接写的 那种直接乘以loss的简单方法.这里面的梯度传导才是正确的算法收敛和正确的保证.  这里面的技巧对于a 和self.a 里面梯度的操作和控制是一个重要点.
 
 
 ###############################  Critic  ####################################
@@ -118,7 +118,7 @@ class Critic(object):
         self.replacement = replacement
 
         with tf.variable_scope('Critic'):
-            # Input (s, a), output q
+            # Input (s, a), output q   因为需要固定a,只让他前向传到,不让他逆向传倒.也就是把他当作常数值.所以这里用self.a把a来去掉梯度运算.!!!!!!!很重要的操作,之前莫凡的代码错就错在这里,没有用self.a用的是a
             self.a = tf.stop_gradient(a)    # stop critic update flows to actor
             self.q = self._build_net(S, self.a, 'eval_net', trainable=True)
 
@@ -129,7 +129,7 @@ class Critic(object):
             self.t_params = tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES, scope='Critic/target_net')
 
         with tf.variable_scope('target_q'):
-            self.target_q = R + self.gamma * self.q_
+            self.target_q = R + self.gamma * self.q_   # 真实的value=当前奖励+衰减值* 后续奖励. 这个后续奖励就是 self.q_  这点跟dqn 一样.
 
         with tf.variable_scope('TD_error'):
             self.loss = tf.reduce_mean(tf.squared_difference(self.target_q, self.q))
@@ -138,7 +138,7 @@ class Critic(object):
             self.train_op = tf.train.AdamOptimizer(self.lr).minimize(self.loss)
 
         with tf.variable_scope('a_grad'):
-            # 下面行写上self.a效果就会变好了.
+            # 下面行写上self.a效果就会变好了.  下面行表示 返回self.q 对self.a求导的值.  而要写self.a 因为self.q 计算时候没有用到a,如果写a那么 就永远返回None了.
             self.a_grads = tf.gradients(self.q, self.a)[0]   # tensor of gradients of each sample (None, a_dim)
 
         if self.replacement['name'] == 'hard':
@@ -160,7 +160,7 @@ class Critic(object):
                 b1 = tf.get_variable('b1', [1, n_l1], initializer=init_b, trainable=trainable)
                 net = tf.nn.relu(tf.matmul(s, w1_s) + tf.matmul(a, w1_a) + b1)
 
-            with tf.variable_scope('q'):
+            with tf.variable_scope('q'):  # 这一层输入30输出1
                 q = tf.layers.dense(net, 1, kernel_initializer=init_w, bias_initializer=init_b, trainable=trainable)   # Q(s,a)
         return q
 
@@ -207,7 +207,7 @@ with tf.name_scope('S'):
     S = tf.placeholder(tf.float32, shape=[None, state_dim], name='s')
 with tf.name_scope('R'):
     R = tf.placeholder(tf.float32, [None, 1], name='r')
-with tf.name_scope('S_'):
+with tf.name_scope('S_'):   # 下一个状态.
     S_ = tf.placeholder(tf.float32, shape=[None, state_dim], name='s_')
 
 
@@ -253,7 +253,7 @@ for i in range(MAX_EPISODES):
             b_r = b_M[:, -state_dim - 1: -state_dim]
             b_s_ = b_M[:, -state_dim:]
 
-            critic.learn(b_s, b_a, b_r, b_s_)
+            critic.learn(b_s, b_a, b_r, b_s_)  #先学critic ,再学习actor
             actor.learn(b_s)
 
         s = s_
