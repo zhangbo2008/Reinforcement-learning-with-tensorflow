@@ -1,6 +1,7 @@
 """
 Note: This is a updated version from my previous code,
-for the target network, I use moving average to soft replace target parameters instead using assign function.
+for the target network, I use moving average to soft
+replace target parameters instead using assign function.
 By doing this, it has 20% speed up on my machine (CPU).
 
 Deep Deterministic Policy Gradient (DDPG), Reinforcement Learning.

@@ -20,7 +20,13 @@ tf.set_random_seed(2)  # reproducible
 # Superparameters
 OUTPUT_GRAPH = False
 MAX_EPISODE = 3000
-DISPLAY_REWARD_THRESHOLD = 200  # renders environment if total episode reward is greater then this threshold
+DISPLAY_REWARD_THRESHOLD = 2000  # renders environment if total episode reward is greater then this threshold
+
+
+'''
+已经把显示步奏之前的训练设置为2000,如果结果还是不好,说明算法有问题写的.
+'''
+
 MAX_EP_STEPS = 1000   # maximum time step in one episode
 RENDER = False  # rendering wastes time
 GAMMA = 0.9     # reward discount in TD error
@@ -36,7 +42,7 @@ N_A = env.action_space.n
 
 
 class Actor(object):
-    def __init__(self, sess, n_features, n_actions, lr=0.001):
+    def __init__(self, sess, n_features, n_actions, lr=0.001):#定义一些运算和数值.
         self.sess = sess
 
         self.s = tf.placeholder(tf.float32, [1, n_features], "state")
@@ -56,16 +62,29 @@ class Actor(object):
             self.acts_prob = tf.layers.dense(
                 inputs=l1,
                 units=n_actions,    # output units
-                activation=tf.nn.softmax,   # get action probabilities
+                activation=tf.nn.softmax,   # get action probabilities  因为softmax了,所以下面要用log
                 kernel_initializer=tf.random_normal_initializer(0., .1),  # weights
                 bias_initializer=tf.constant_initializer(0.1),  # biases
                 name='acts_prob'
             )
 
         with tf.variable_scope('exp_v'):
-            log_prob = tf.log(self.acts_prob[0, self.a])
+            log_prob = tf.log(self.acts_prob[0, self.a])  # 采取当前action的概率
             self.exp_v = tf.reduce_mean(log_prob * self.td_error)  # advantage (TD_error) guided loss
-
+            '''
+            为什么需要maximize(exp_v)
+            
+            也就是最大化tf.reduce_mean(log_prob * self.td_error)
+            括号内表示的是采取aciton的概率*(真实value-预测value)
+            
+            最后一个变量是一个浮点数,所以
+            真实-预测是正数, 就会让log_prob变大.就是让概率大的趋近于1.概率小的趋近于0.
+            这样会让loss变小.这个地方有点怪???????????????????????????????
+            总感觉这个loss不对,没法学习到最优解.
+            critic的写法没问题,最后能学习到最优的判断器.但是actor的传导感觉有问题.写的.
+            总感觉exp_v体现不了当前行为的价值.
+            
+            '''
         with tf.variable_scope('train'):
             self.train_op = tf.train.AdamOptimizer(lr).minimize(-self.exp_v)  # minimize(-exp_v) = maximize(exp_v)
 
@@ -111,7 +130,7 @@ class Critic(object):
             )
 
         with tf.variable_scope('squared_TD_error'):
-            self.td_error = self.r + GAMMA * self.v_ - self.v
+            self.td_error = self.r + GAMMA * self.v_ - self.v   #真实价值- 当前预测价值=td_error
             self.loss = tf.square(self.td_error)    # TD_error = (r+gamma*V_next) - V_eval
         with tf.variable_scope('train'):
             self.train_op = tf.train.AdamOptimizer(lr).minimize(self.loss)
