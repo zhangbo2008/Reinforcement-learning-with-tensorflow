@@ -12,6 +12,19 @@ tensorflow r1.2
 gym 0.9.2
 """
 
+
+'''
+听说这个是dl里面最叼的算法,已经作为openai的默认ai算法了.
+
+对于细节的推导我写在根目录的DL的pdf笔记里面了. 补充了李宏毅跳过的几个小细节.
+'''
+
+
+
+
+
+
+
 import tensorflow as tf
 import numpy as np
 import matplotlib.pyplot as plt
@@ -43,7 +56,7 @@ class PPO(object):
             l1 = tf.layers.dense(self.tfs, 100, tf.nn.relu)
             self.v = tf.layers.dense(l1, 1)
             self.tfdc_r = tf.placeholder(tf.float32, [None, 1], 'discounted_r')
-            self.advantage = self.tfdc_r - self.v
+            self.advantage = self.tfdc_r - self.v             # 这个就是笔记中的A函数了.
             self.closs = tf.reduce_mean(tf.square(self.advantage))
             self.ctrain_op = tf.train.AdamOptimizer(C_LR).minimize(self.closs)
 
@@ -61,8 +74,8 @@ class PPO(object):
             with tf.variable_scope('surrogate'):
                 # ratio = tf.exp(pi.log_prob(self.tfa) - oldpi.log_prob(self.tfa))
                 ratio = pi.prob(self.tfa) / oldpi.prob(self.tfa)
-                surr = ratio * self.tfadv
-            if METHOD['name'] == 'kl_pen':
+                surr = ratio * self.tfadv    # 这个就是loss的第一部分.
+            if METHOD['name'] == 'kl_pen':  # 选择ppo算法的一种惩罚项.
                 self.tflam = tf.placeholder(tf.float32, None, 'lambda')
                 kl = tf.distributions.kl_divergence(oldpi, pi)
                 self.kl_mean = tf.reduce_mean(kl)
@@ -70,7 +83,7 @@ class PPO(object):
             else:   # clipping method, find this is better
                 self.aloss = -tf.reduce_mean(tf.minimum(
                     surr,
-                    tf.clip_by_value(ratio, 1.-METHOD['epsilon'], 1.+METHOD['epsilon'])*self.tfadv))
+                    tf.clip_by_value(ratio, 1.-METHOD['epsilon'], 1.+METHOD['epsilon'])*self.tfadv))   #   ppo2 的方法.
 
         with tf.variable_scope('atrain'):
             self.atrain_op = tf.train.AdamOptimizer(A_LR).minimize(self.aloss)
@@ -108,18 +121,18 @@ class PPO(object):
             l1 = tf.layers.dense(self.tfs, 100, tf.nn.relu, trainable=trainable)
             mu = 2 * tf.layers.dense(l1, A_DIM, tf.nn.tanh, trainable=trainable)
             sigma = tf.layers.dense(l1, A_DIM, tf.nn.softplus, trainable=trainable)
-            norm_dist = tf.distributions.Normal(loc=mu, scale=sigma)
+            norm_dist = tf.distributions.Normal(loc=mu, scale=sigma) # 生成正态分布
         params = tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES, scope=name)
         return norm_dist, params
 
     def choose_action(self, s):
         s = s[np.newaxis, :]
         a = self.sess.run(self.sample_op, {self.tfs: s})[0]
-        return np.clip(a, -2, 2)
+        return np.clip(a, -2, 2)  #通过神经网络生成一个action的分布然后抽样出一个action
 
     def get_v(self, s):
         if s.ndim < 2: s = s[np.newaxis, :]
-        return self.sess.run(self.v, {self.tfs: s})[0, 0]
+        return self.sess.run(self.v, {self.tfs: s})[0, 0]  #根据state扔入神经网络生成得分.
 
 env = gym.make('Pendulum-v0').unwrapped
 ppo = PPO()
