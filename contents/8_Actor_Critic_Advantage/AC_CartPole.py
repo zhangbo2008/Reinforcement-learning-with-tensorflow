@@ -87,7 +87,21 @@ class Actor(object):
 
         with tf.variable_scope('exp_v'):
             log_prob = tf.log(self.acts_prob[0, self.a])  # 采取当前action的概率
+            # log_prob = self.acts_prob[0, self.a]  # 采取当前action的概率
             self.exp_v = tf.reduce_mean(log_prob * self.td_error)  # advantage (TD_error) guided loss
+
+            # 这个exp_v 其实是 policy gradient算法里面的价值函数.让这个尽可能大即可.
+            # 这个公式看DL的pdf笔记.pdf即可.里面第一个就是这个公式. 就是那个obj-func.只不过把p theta (pi) 取了一个log,因为之前用了softmax. 这里用log 归一化一下.怕计算爆炸了.其实我感觉没必要算log,所以我把这个log给去掉了!!!!!!!!!!!!!  self.td_error 就是奖励. 因为奖励需要归一化,减去平均值.也就是精确值.所以就是得到error值就是奖励.
+
+
+
+
+
+
+
+
+
+
             '''
             为什么需要maximize(exp_v)
             
@@ -147,7 +161,7 @@ class Critic(object):
             )
 
         with tf.variable_scope('squared_TD_error'):
-            self.td_error = self.r + GAMMA * self.v_ - self.v   #真实价值- 当前预测价值=td_error
+            self.td_error = self.r + GAMMA * self.v_      -   self.v   #真实价值- 当前预测价值=td_error
             self.loss = tf.square(self.td_error)    # TD_error = (r+gamma*V_next) - V_eval
         with tf.variable_scope('train'):
             self.train_op = tf.train.AdamOptimizer(lr).minimize(self.loss)
